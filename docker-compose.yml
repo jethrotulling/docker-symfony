@@ -1,0 +1,48 @@
+version: '2'
+
+services:
+
+  php-fpm:
+    environment:
+      DATABASE_HOST: database
+      DATABASE_PASS: "${DATABASE_PASS}"
+      DATABASE_USER: root
+      REDIS_SERVER: redis
+    image: jethrotulling/symfony-php-fpm:latest
+    tty: true
+    stdin_open: true
+    depends_on:
+      - redis
+      - database
+    volumes:
+      - .:/var/www/html
+
+  nginx:
+    image: jethrotulling/symfony-nginx:latest
+    tty: true
+    stdin_open: true
+    depends_on:
+      - php-fpm
+    ports:
+      - 80:80
+    volumes_from:
+      - php-fpm
+
+  redis:
+    image: jethrotulling/redis:latest
+    ports:
+      - "6379:6379"
+
+  database:
+    image: jethrotulling/mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DATABASE_PASS}"
+      MYSQL_DATABASE: carzarr
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+
+volumes:
+  dbdata:
+    driver: local

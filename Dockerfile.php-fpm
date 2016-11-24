@@ -1,0 +1,52 @@
+FROM php:fpm-alpine
+
+# https://hub.docker.com/_/php/
+# https://github.com/docker-library/php/blob/master/7.0/alpine/Dockerfile
+MAINTAINER Jethro Tulling <jethro@jethro-tulling.com>
+
+# persistent / runtime deps
+ENV PHPIZE_DEPS \
+    autoconf \
+    file \
+    g++ \
+    gcc \
+    libc-dev \
+    make \
+    pkgconf \
+    re2c
+
+ENV LIB_DEPS \
+    libmcrypt
+
+ENV PHP_EXT \
+    iconv \
+    mbstring \
+    mcrypt \
+    opcache \
+    pdo \
+    pdo_mysql
+
+RUN apk add --no-cache --virtual .persistent-deps $LIB_DEPS \
+    && docker-php-ext-install $PHP_EXT
+
+RUN set -xe \
+	&& apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
+    && pecl install redis apcu intl \
+    && docker-php-ext-enable --ini-name 10-apcu.ini apcu \
+    && docker-php-ext-enable --ini-name 10-redis.ini redis \
+    && apk del .build-deps
+
+COPY config/php/php.development.ini /usr/local/etc/php/php.ini
+COPY config/php-fpm.d/docker.conf /usr/locaal/etc/php-fpm.d/docker.conf
+COPY config/php-fpm.d/www.conf /usr/locaal/etc/php-fpm.d/www.conf
+COPY config/php-fpm.d/zz-docker.conf /usr/locaal/etc/php-fpm.d/zz-docker.conf
+
+RUN mkdir -p /var/www/html/var/cache
+RUN mkdir -p /var/www/html/var/logs
+RUN mkdir -p /var/www/html/var/sessions
+
+RUN chown -R www-data:www-data /var/www/html/var
+
+VOLUME ["/var/www/html/var/cache", "/var/www/html/var/logs", "/var/www/html/var/sessions"]
+
+EXPOSE 9000

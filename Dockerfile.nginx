@@ -1,0 +1,9 @@
+FROM nginx:alpine
+
+# https://hub.docker.com/_/nginx/
+# https://github.com/nginxinc/docker-nginx/blob/master/stable/alpine/Dockerfile
+MAINTAINER Jethro Tulling <jethro@jethro-tulling.com>
+
+COPY config/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY config/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
+
