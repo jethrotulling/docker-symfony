@@ -3,22 +3,22 @@ version: '2'
 services:
 
   php-fpm:
+    image: jethrotulling/symfony-php-fpm:latest
     environment:
       DATABASE_HOST: database
       DATABASE_PASS: "${DATABASE_PASS}"
       DATABASE_USER: root
       REDIS_SERVER: redis
-    image: jethrotulling/symfony-php-fpm:latest
     build:
       context: .
       dockerfile: Dockerfile.php-fpm
     tty: true
     stdin_open: true
-    depends_on:
-      - redis
-      - database
+    links:
+    - redis
+    - database
     volumes:
-      - .:/var/www/html
+    - .:/var/www/html
 
   nginx:
     image: jethrotulling/symfony-nginx:latest
@@ -27,17 +27,17 @@ services:
       dockerfile: Dockerfile.nginx
     tty: true
     stdin_open: true
-    depends_on:
-      - php-fpm
+    links:
+    - php-fpm
     ports:
-      - 80:80
+    - 80:80
     volumes_from:
-      - php-fpm
+    - php-fpm
 
   redis:
     image: jethrotulling/redis:latest
     ports:
-      - "6379:6379"
+    - 6379:6379
 
   database:
     image: jethrotulling/mariadb:latest
@@ -45,9 +45,9 @@ services:
       MYSQL_ROOT_PASSWORD: "${DATABASE_PASS}"
       MYSQL_DATABASE: jethro
     ports:
-      - "3306:3306"
+    - 3306:3306
     volumes:
-      - dbdata:/var/lib/mysql
+    - dbdata:/var/lib/mysql
 
 volumes:
   dbdata:
