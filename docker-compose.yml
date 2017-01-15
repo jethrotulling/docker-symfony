@@ -9,6 +9,9 @@ services:
       DATABASE_USER: root
       REDIS_SERVER: redis
     image: jethrotulling/symfony-php-fpm:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.php-fpm
     tty: true
     stdin_open: true
     depends_on:
@@ -19,6 +22,9 @@ services:
 
   nginx:
     image: jethrotulling/symfony-nginx:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
     tty: true
     stdin_open: true
     depends_on:
@@ -37,7 +43,7 @@ services:
     image: jethrotulling/mariadb:latest
     environment:
       MYSQL_ROOT_PASSWORD: "${DATABASE_PASS}"
-      MYSQL_DATABASE: carzarr
+      MYSQL_DATABASE: jethro
     ports:
       - "3306:3306"
     volumes:
